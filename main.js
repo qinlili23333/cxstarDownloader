@@ -33,7 +33,7 @@
                 a.download = filename;
                 a.click();
                 window.URL.revokeObjectURL(url);
-                if(pageCurrent<=pageTotal){
+                if(pageCurrent<pageTotal){
                     pageCurrent++;
                     downloadPic(pageCurrent);
                 }
