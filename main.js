@@ -1,22 +1,55 @@
 // ==UserScript==
-// @name         畅想之星下载器
+// @name         畅想之星小助手
 // @namespace    https://qinlili.bid
-// @version      0.2
-// @description  导出为图片下载
+// @version      0.3
+// @description  图片批量下载，解除复制保护，自动验证码
 // @author       琴梨梨
 // @match        *://*/onlineread?*
 // @match        *://*/onlinebook?ruid=*&pinst=*
+// @match        *://*/Account/Login?*
+// @match        *://*/Account/UserLogin?*
 // @grant        none
 // @run-at document-idle
 // ==/UserScript==
 
 (function() {
     'use strict';
-    if(document.location.pathname.indexOf("onlineread")){
+    //登陆页面
+    if(document.location.pathname.indexOf("Account")>0){
+        var vCode="114514";
+        //拦截XHR
+        (function(open) {
+            XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+                console.log(vCode)
+                if((url.indexOf("GetLoginRandomCode")>0)&&!(vCode=="114514")){
+                    url= "data:text/plain,"+vCode;
+                }
+                open.call(this, method, url, async, user, pass);
+            };
+        })(XMLHttpRequest.prototype.open);
+        //读取验证码
+        var xhr = new XMLHttpRequest();
+        xhr.onload = event => {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                vCode= xhr.response;
+                console.log("验证码是"+vCode)
+                $("#codeCover").click();
+                setTimeout(function(){document.getElementById("vcode").value=vCode;$('#showInfor').html("琴梨梨为你自动填写验证码");},250)
+            }
+            xhr.onerror = function (e) {
+                logcat("验证码读取失败")
+            }
+        }
+        xhr.open('GET',document.location.origin+"/Account/GetLoginRandomCode");
+        xhr.send();
+    }
+    //EPUB开启右键复制
+    if(document.location.pathname.indexOf("onlineread")>0){
         $(document).unbind("contextmenu", null);
         $("#page_container").unbind("mouseup",null);
     }
-    if(document.location.pathname.indexOf("onlinebook")){
+    //图片爬虫
+    if(document.location.pathname.indexOf("onlinebook")>0){
         document.body.oncontextmenu = ""
         var pageTotal = 0;
         var picUrl = ""
@@ -42,7 +75,7 @@
         //批量下载
         function batchDownload() {
             pageTotal = document.getElementById("sumNumb").innerText - 1;
-             downloadPic(pageCurrent)
+            downloadPic(pageCurrent)
         }
         //创建下载按钮
         var downloadBtn = document.createElement("a");
