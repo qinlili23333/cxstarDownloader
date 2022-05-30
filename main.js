@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         畅想之星小助手
 // @namespace    https://qinlili.bid
-// @version      0.3
+// @version      0.4
 // @description  图片批量下载，解除复制保护，自动验证码
 // @author       琴梨梨
-// @match        *://*/onlineread?*
+// @match        *://*/onlineepub?*
 // @match        *://*/onlinebook?ruid=*&pinst=*
 // @match        *://*/Account/Login?*
 // @match        *://*/Account/UserLogin?*
@@ -43,10 +43,16 @@
         xhr.open('GET',document.location.origin+"/Account/GetLoginRandomCode");
         xhr.send();
     }
-    //EPUB开启右键复制
-    if(document.location.pathname.indexOf("onlineread")>0){
+    //EPUB
+    if(document.location.pathname.indexOf("onlineepub")>0){
+        //右键复制
         $(document).unbind("contextmenu", null);
         $("#page_container").unbind("mouseup",null);
+        //按钮复制
+        //var copyBtn=document.getElementsByClassName("marker-menu-item marker-menu-item-copy")[0];
+        //copyBtn.addEventListener("click",function(e){
+        //    e.preventDefault();
+        //})
     }
     //图片爬虫
     if(document.location.pathname.indexOf("onlinebook")>0){
@@ -57,7 +63,7 @@
         var pageCurrent = 0;
         //下载指定页面图片
         function downloadPic(page) {
-            picUrl = path + "&pageNo=" + page ;
+            picUrl = path + "&pageNo=" + page + "&" + getNonceStr();
             fetch(picUrl).then(res => res.blob().then(blob => {
                 var a = document.createElement('a');
                 var url = window.URL.createObjectURL(blob);
